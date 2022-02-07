@@ -1,25 +1,36 @@
+yml instructions
 name: deploy-container
 
+# what events we are watching for
 on: 
   push: 
     branches: 
       - master
+      # only run this workflow when there are changes on the container
     paths:  
       - 'packages/container/**'
 
 defualts: 
   run: 
+  # set execution environment inside container directory
     working-directory: packages/container
 
 jobs: 
+# to build and deploy the project
   build: 
+  # run on a vertual machine created by github
     runs-on: ubuntu-latest
+  # write actual commands that we want to execute
     steps: 
       - uses: actions/checkout@v2
+      # install dependencies inside the project
       - run: npm install 
+      # run webpack build process
       - run: npm run build
 
+      # deploy the project on aws (gives access to aws cli)
       - uses: chrislennon/action-aws-cli@v1.1
+      # use cli to run a command (sync dist with s3 bucket)
       - run: aws s3 sync dist s3://${{ secrets.AWS_S3_BUCKET_NAME }}/container/latest
         env: 
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
